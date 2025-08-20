@@ -1,6 +1,7 @@
 package org.example.booktracker.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -21,6 +22,7 @@ public class User {
     @Column(name = "id")
     private int id;
 
+    //add validation later
     @Column(name = "username")
     private String username;
 
@@ -47,6 +49,9 @@ public class User {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Book> books = new ArrayList<>();
 
     //orphanRemoval removes row from database when entity is removed
     //user.getReviews().remove(review), removes from database. Look at notes for more

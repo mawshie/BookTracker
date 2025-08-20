@@ -26,7 +26,7 @@ public class ReadingStatus {
     private Status status;
 
     @Column(name = "start_date")
-    private Date starDate;
+    private Date startDate;
 
     @Column(name = "finish_date")
     private Date finishDate;
@@ -35,7 +35,7 @@ public class ReadingStatus {
     private int currentPage;
 
     @Column(name = "total_pages")
-    private int totalPage;
+    private int totalPages;
 
     @Column(name = "notes")
     private String notes;
