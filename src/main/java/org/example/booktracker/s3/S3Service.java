@@ -1,5 +1,7 @@
 package org.example.booktracker.s3;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,11 @@ public class S3Service {
 
     private final S3Client s3Client;
 
+    @Value("${cloud.aws.region.static}")
+    private String region;
+
+    private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
+
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
 
@@ -27,21 +34,46 @@ public class S3Service {
     }
 
     //upload file
-    public String putObject(String objectKey, byte[] file){ //byte used in
+    public String putObject(MultipartFile file, String folder){
         try {
+            String originalFileName = file.getOriginalFilename();
+            String fileExtension = getFileExtension(originalFileName);
+            String uniqueFileName = generateUniqueFileName(fileExtension);
+            String fileKey = folder + "/" + uniqueFileName;
+
+            if (!isValidFile(file)){
+                throw new RuntimeException("Invalid file type. Only JPG, PNG, and GIF are allowed.");
+            }
+
+            //check if bigger than 10MB
+            if (file.getSize() > 10 * 1024 * 1024){
+                throw new RuntimeException("File size too large.");
+            }
+
+            //upload
             PutObjectRequest putOb = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(objectKey)
+                    .key(fileKey)
+                    .contentType(file.getContentType()) //important for images
                     .build();
 
-            s3Client.putObject(putOb, RequestBody.fromBytes(file));
+            s3Client.putObject(putOb, RequestBody.fromBytes(file.getBytes()));
 
-            return s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(objectKey)).toString();
+            logger.info("File uploaded successfully: {}", fileKey);
+            return fileKey;
         }catch (S3Exception e){
             throw new RuntimeException("Failed to upload to S3: " + e.awsErrorDetails().errorMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    public String getFileUrl(String fileKey){
+        if (fileKey == null || fileKey.isEmpty()){
+            return null;
+        }
+        return s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(fileKey)).toString();
+    }
 
     //download file
     public byte[] getObject(String key){
