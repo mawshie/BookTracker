@@ -1,4 +1,4 @@
-package org.example.booktracker.controller;
+package org.example.booktracker.security;
 
 import org.example.booktracker.domain.User;
 import org.example.booktracker.service.UserService;

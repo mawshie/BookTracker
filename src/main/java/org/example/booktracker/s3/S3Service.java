@@ -8,12 +8,11 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
@@ -72,7 +71,7 @@ public class S3Service {
         if (fileKey == null || fileKey.isEmpty()){
             return null;
         }
-        return s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(fileKey)).toString();
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileKey);
     }
 
     //download file
@@ -88,6 +87,23 @@ public class S3Service {
             return res.readAllBytes();
         }catch (IOException e){
             throw new RuntimeException(e);
+        }
+    }
+
+    //delete file
+    public void deleteFile(String fileKey) {
+        try {
+            if (fileKey != null && !fileKey.isEmpty()) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileKey)
+                        .build();
+
+                s3Client.deleteObject(deleteObjectRequest);
+                logger.info("File deleted successfully: {}", fileKey);
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting file from S3: {}", fileKey, e);
         }
     }
 

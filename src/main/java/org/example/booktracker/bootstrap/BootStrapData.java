@@ -34,11 +34,12 @@ public class BootStrapData implements CommandLineRunner {
             userRepository.save(john);
         }
 
-        s3Service.putObject("foo", "Hello World".getBytes());
+        //doesn't work
+        //s3Service.putObject("foo", "Hello World".getBytes());
 
-        byte[] obj = s3Service.getObject("foo");
+        //byte[] obj = s3Service.getObject("foo");
 
         //turn byte array into string new String(name of array)
-        System.out.println("Hooray: " + new String(obj));
+       // System.out.println("Hooray: " + new String(obj));
     }
 }
