@@ -63,4 +63,24 @@ public class BookController {
             return "redirect:/books/add";
         }
     }
+
+    @PostMapping("/delete/{id}")
+    public String deleteBook(@PathVariable int id, Authentication authentication, RedirectAttributes redirectAttributes){
+
+        try {
+            User currentUser = (User) authentication.getPrincipal();
+
+            if (currentUser.getRole() != Role.ADMIN && !bookService.isBookOwnedByUser(id, currentUser.getId())){
+                redirectAttributes.addFlashAttribute("error", "You don't have permission to delete this book");
+                return "redirect:/books";
+            }
+
+            bookService.deleteBook(id);
+            redirectAttributes.addFlashAttribute("success", "Book deleted successfully");
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute("error", "Error deleteing book: " + e.getMessage());
+        }
+
+        return "redirect:/books";
+    }
 }
