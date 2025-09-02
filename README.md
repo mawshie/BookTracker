@@ -1,4 +1,4 @@
-# Book Tracker
+# PageKeeper
 A Spring Boot web application that allows users to track their personal book collection. Users can add books with cover images uploaded to AWS S3, view their own library, and delete books.
 
 # Features
